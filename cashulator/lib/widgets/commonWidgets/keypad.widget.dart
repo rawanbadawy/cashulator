@@ -1,3 +1,4 @@
+// lib/widgets/commonWidgets/keypad.widget.dart
 import 'package:cashulator/cubit/calc_history.cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:cashulator/widgets/commonWidgets/keypad_button.widget.dart';
@@ -26,7 +27,7 @@ class KeypadWidget extends StatelessWidget {
   final CalcCubit calcCubit;
   final CalcHistoryCubit calcHistoryCubit;
 
-  // used only in convertor screen
+  // used only in convertor screen (old logic, still kept simple)
   final String? convertAmount;
   final ValueChanged<String>? onConvertAmountChanged;
 
@@ -34,12 +35,15 @@ class KeypadWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
 
-    final Color opBg = dark ? const Color(0xFF2A2A2A) : const Color(0xFFEFEFEF);
-    final Color numBg = dark ? const Color(0xFF1E1E1E) : const Color(0xFFF2F2F2);
+    final Color opBg =
+        dark ? const Color(0xFF2A2A2A) : const Color(0xFFEFEFEF);
+    final Color numBg =
+        dark ? const Color(0xFF1E1E1E) : const Color(0xFFF2F2F2);
     final Color clearBg = const Color(0xFFFF5A5A);
     final Color equalBg = const Color(0xFF22C55E);
     final Color opFg = const Color(0xFF22C55E);
-    final Color numFg = dark ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280);
+    final Color numFg =
+        dark ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280);
 
     if (isCalc) {
       return Container(
@@ -82,27 +86,10 @@ class KeypadWidget extends StatelessWidget {
                   content: '%',
                   onTap: () {
                     final op = operationCubit.state;
-
-                    String? toPercent(String text) {
-                      if (text.isEmpty) return null;
-                      final value = double.tryParse(text);
-                      if (value == null) return null;
-                      final percent = value / 100.0;
-                      return percent.toString();
-                    }
-
                     if (op == null || op.isEmpty) {
-                      final current = firstOperatorCubit.state;
-                      final newText = toPercent(current);
-                      if (newText != null) {
-                        firstOperatorCubit.set(value: newText);
-                      }
+                      firstOperatorCubit.toPercent();
                     } else {
-                      final current = secondOperatorCubit.state ?? '';
-                      final newText = toPercent(current);
-                      if (newText != null) {
-                        secondOperatorCubit.set(value: newText);
-                      }
+                      secondOperatorCubit.toPercent();
                     }
                   },
                 ),
@@ -267,21 +254,9 @@ class KeypadWidget extends StatelessWidget {
                   onTap: () {
                     final op = operationCubit.state;
                     if (op == null || op.isEmpty) {
-                      final current = firstOperatorCubit.state;
-                      if (current.contains('.')) return;
-                      if (current.isEmpty) {
-                        firstOperatorCubit.add(value: '0.');
-                      } else {
-                        firstOperatorCubit.add(value: '.');
-                      }
+                      firstOperatorCubit.addDot();
                     } else {
-                      final current = secondOperatorCubit.state ?? '';
-                      if (current.contains('.')) return;
-                      if (current.isEmpty) {
-                        secondOperatorCubit.add(value: '0.');
-                      } else {
-                        secondOperatorCubit.add(value: '.');
-                      }
+                      secondOperatorCubit.addDot();
                     }
                   },
                 ),
@@ -306,12 +281,12 @@ class KeypadWidget extends StatelessWidget {
       );
     }
 
-    
+    // SIMPLE OLD CONVERTOR KEYPAD (still uses callback)
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
         children: [
-          
+          // Row 1: Big C
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -319,7 +294,7 @@ class KeypadWidget extends StatelessWidget {
                 bgcolor: clearBg,
                 frcolor: Colors.white,
                 content: 'C',
-                width: 300, 
+                width: 300,
                 height: 74,
                 onTap: () {
                   if (onConvertAmountChanged != null) {

@@ -7,22 +7,22 @@ class KeypadButtonWidget extends StatelessWidget {
     required this.frcolor,
     required this.content,
     this.onTap,
-    this.width = 74,
-    this.height = 74,
+    this.width,
+    this.height,
   });
 
   final Color bgcolor;
   final Color frcolor;
   final String content;
   final VoidCallback? onTap;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width,
-      height: height,
+      width: width ?? 74,
+      height: height ?? 74,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(

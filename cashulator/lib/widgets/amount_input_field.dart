@@ -1,13 +1,17 @@
+// lib/widgets/amount_input_field.dart
+import 'package:cashulator/cubit/amount.cubit.dart';
 import 'package:flutter/material.dart';
 
 class AmountInputField extends StatefulWidget {
   final double initial;
   final ValueChanged<double> onChanged;
+  final AmountCubit amountCubit;
 
   const AmountInputField({
     super.key,
     required this.initial,
     required this.onChanged,
+    required this.amountCubit,
   });
 
   @override
@@ -21,6 +25,7 @@ class _AmountInputFieldState extends State<AmountInputField> {
   void initState() {
     super.initState();
     controller = TextEditingController(text: widget.initial.toString());
+    widget.amountCubit.set(widget.initial);
   }
 
   @override
@@ -28,6 +33,7 @@ class _AmountInputFieldState extends State<AmountInputField> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initial != widget.initial) {
       controller.text = widget.initial.toString();
+      widget.amountCubit.set(widget.initial);
     }
   }
 
@@ -41,8 +47,8 @@ class _AmountInputFieldState extends State<AmountInputField> {
         border: OutlineInputBorder(),
       ),
       onChanged: (s) {
-        final v = double.tryParse(s.replaceAll(',', '.')) ?? 0;
-        widget.onChanged(v);
+        widget.amountCubit.updateFromText(s);
+        widget.onChanged(widget.amountCubit.state);
       },
     );
   }

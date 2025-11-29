@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SecondOperatorCubit extends Cubit<String?> {
   SecondOperatorCubit() : super(null);
+String _current() => state ?? '';
 
   void add({required String value}) {
     final current = state ?? '';
@@ -36,5 +37,23 @@ class SecondOperatorCubit extends Cubit<String?> {
     } else {
       emit('($current)');
     }
+  }
+  void addDot() {
+    final current = _current();
+    if (current.contains('.')) return;
+
+    if (current.isEmpty) {
+      emit('0.');
+    } else {
+      emit('$current.');
+    }
+  }
+  void toPercent() {
+    final current = state ?? '';
+    if (current.isEmpty) return;
+    final value = double.tryParse(current);
+    if (value == null) return;
+    final percent = value / 100.0;
+    emit(percent.toString());
   }
 }

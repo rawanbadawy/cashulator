@@ -33,7 +33,9 @@ class ConvertorDisplayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final Color opBg = dark ? const Color(0xFF2A2A2A) : const Color(0xFFEFEFEF);
+
+    final Color opBg =
+        dark ? const Color(0xFF2A2A2A) : const Color(0xFFEFEFEF);
     final Color opFg = const Color(0xFF22C55E);
 
     const codeToLabel = {
@@ -48,10 +50,10 @@ class ConvertorDisplayWidget extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 8),
 
-        // FROM currency + number under it
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -86,7 +88,7 @@ class ConvertorDisplayWidget extends StatelessWidget {
               child: Text(
                 fromAmount,
                 style: const TextStyle(
-                  fontSize: 44,
+                  fontSize: 32,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -96,29 +98,26 @@ class ConvertorDisplayWidget extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        // Swap button
-        Align(
-          alignment: Alignment.center,
-          child: SizedBox(
-            width: 56,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: onSwap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: opBg,
-                foregroundColor: opFg,
-                shape: const CircleBorder(),
-                padding: EdgeInsets.zero,
-                elevation: 0,
-              ),
-              child: const Icon(Icons.swap_vert, size: 24),
+        // swap button
+        SizedBox(
+          width: 56,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: onSwap,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: opBg,
+              foregroundColor: opFg,
+              shape: const CircleBorder(),
+              padding: EdgeInsets.zero,
+              elevation: 0,
             ),
+            child: const Icon(Icons.swap_vert, size: 24),
           ),
         ),
 
         const SizedBox(height: 16),
 
-        // TO currency + number under it
+      
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -153,7 +152,7 @@ class ConvertorDisplayWidget extends StatelessWidget {
               child: Text(
                 toAmount,
                 style: const TextStyle(
-                  fontSize: 44,
+                  fontSize: 32,
                   fontWeight: FontWeight.w400,
                 ),
               ),

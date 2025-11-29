@@ -1,13 +1,11 @@
-import 'package:cashulator/cubit/calc.cubit.dart';
 import 'package:cashulator/cubit/calc_Display.cubit.dart';
 import 'package:cashulator/cubit/calc_history.cubit.dart';
-import 'package:cashulator/cubit/first_operator.cubit.dart';
-import 'package:cashulator/cubit/operation.cubit.dart';
-import 'package:cashulator/cubit/second_operator.cubit.dart';
+import 'package:cashulator/cubit/conv_display.cubit.dart';
+import 'package:cashulator/widgets/convertorWidgets/convertor_keypad.widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cashulator/widgets/convertorWidgets/convertorDisplay.widget.dart';
-import 'package:cashulator/widgets/commonWidgets/keypad.widget.dart';
 import 'package:cashulator/widgets/commonWidgets/options.widget.dart';
 
 class ConvertorScreen extends StatefulWidget {
@@ -18,10 +16,25 @@ class ConvertorScreen extends StatefulWidget {
 }
 
 class _ConvertorScreenState extends State<ConvertorScreen> {
-  String fromCurrency = 'EGP';
-  String toCurrency = 'USD';
-  String fromAmount = '0.00';
-  String toAmount = '0.00';
+  late final ConvDisplayCubit convDisplayCubit;
+  late final CalcDisplayCubit calcDisplayCubit;
+  late final CalcHistoryCubit calcHistoryCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    convDisplayCubit = ConvDisplayCubit();
+    calcDisplayCubit = CalcDisplayCubit();
+    calcHistoryCubit = CalcHistoryCubit();
+  }
+
+  @override
+  void dispose() {
+    convDisplayCubit.close();
+    calcDisplayCubit.close();
+    calcHistoryCubit.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,85 +51,49 @@ class _ConvertorScreenState extends State<ConvertorScreen> {
                 MediaQuery.of(context).viewPadding.bottom +
                 16,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
+          child: BlocBuilder<ConvDisplayCubit, ConvDisplayState>(
+            bloc: convDisplayCubit,
+            builder: (context, state) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
 
-              ConvertorDisplayWidget(
-                fromCurrency: fromCurrency,
-                toCurrency: toCurrency,
-                fromAmount: fromAmount,
-                toAmount: toAmount,
-                onFromChanged: (val) {
-                  if (val == null) return;
-                  setState(() {
-                    fromCurrency = val;
-                  });
-                },
-                onToChanged: (val) {
-                  if (val == null) return;
-                  setState(() {
-                    toCurrency = val;
-                  });
-                },
-                onSwap: () {
-                  setState(() {
-                    final temp = fromCurrency;
-                    fromCurrency = toCurrency;
-                    toCurrency = temp;
+                  // Display with dropdowns + amounts
+                  ConvertorDisplayWidget(
+                    fromCurrency: state.fromCurrency,
+                    toCurrency: state.toCurrency,
+                    fromAmount: state.fromAmount,
+                    toAmount: state.toAmount,
+                    onFromChanged: (val) {
+                      if (val == null) return;
+                      convDisplayCubit.changeFromCurrency(val);
+                    },
+                    onToChanged: (val) {
+                      if (val == null) return;
+                      convDisplayCubit.changeToCurrency(val);
+                    },
+                    onSwap: convDisplayCubit.swap,
+                  ),
 
-                    final tempAmount = fromAmount;
-                    fromAmount = toAmount;
-                    toAmount = tempAmount;
-                  });
-                },
-              ),
+                  const SizedBox(height: 8),
 
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: const [
-                    Icon(Icons.history, size: 20),
-                    SizedBox(width: 16),
-                    Icon(Icons.straighten, size: 20),
-                    SizedBox(width: 16),
-                    Icon(Icons.check_box_outlined, size: 20),
-                    Spacer(),
-                    Icon(Icons.open_in_full, size: 20),
-                  ],
-                ),
-              ),
-              Container(height: 1, color: dividerColor),
-              const SizedBox(height: 10),
+                  const _ConvertorToolbar(),
+                  Container(height: 1, color: dividerColor),
+                  const SizedBox(height: 10),
 
-              OptionsWidget(
-                isCalc: false,
-                calcDisplayCubit: CalcDisplayCubit(),
-                calcHistoryCubit: CalcHistoryCubit(),
-              ),
+                
+                  // Keypad uses the cubit to change the amount
+                  ConvertorKeypadWidget(
+                    currentText: state.fromAmount,
+                    convDisplayCubit: convDisplayCubit,
+                  ),
 
-              KeypadWidget(
-                isCalc: false,
-                firstOperatorCubit: FirstOperatorCubit(),
-                secondOperatorCubit: SecondOperatorCubit(),
-                operationCubit: OperationCubit(),
-                calcCubit: CalcCubit(),
-                calcHistoryCubit: CalcHistoryCubit(),
-                convertAmount: fromAmount,
-                onConvertAmountChanged: (newAmount) {
-                  setState(() {
-                    fromAmount = newAmount;
-                    
-                    toAmount = newAmount;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 12),
-            ],
+                  const SizedBox(height: 12),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -139,6 +116,28 @@ class _ConvertorScreenState extends State<ConvertorScreen> {
             icon: Icon(Icons.currency_exchange),
             label: 'Convert',
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConvertorToolbar extends StatelessWidget {
+  const _ConvertorToolbar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: const [
+          Icon(Icons.history, size: 20),
+          SizedBox(width: 16),
+          Icon(Icons.straighten, size: 20),
+          SizedBox(width: 16),
+          Icon(Icons.check_box_outlined, size: 20),
+          Spacer(),
+          Icon(Icons.open_in_full, size: 20),
         ],
       ),
     );

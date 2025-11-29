@@ -1,5 +1,6 @@
 import 'package:cashulator/cubit/calc_Display.cubit.dart';
 import 'package:cashulator/cubit/calc_history.cubit.dart';
+import 'package:cashulator/cubit/conv_display.cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -26,6 +27,7 @@ class CashulatorApp extends StatelessWidget {
         BlocProvider(create: (_) => CalcCubit()),
         BlocProvider(create: (_) => CalcHistoryCubit()),
         BlocProvider(create: (_) => CalcDisplayCubit()),
+        BlocProvider(create: (_) => ConvDisplayCubit()),
       ],
       
       child: MaterialApp.router(
