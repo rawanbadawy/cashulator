@@ -1,6 +1,7 @@
 import 'package:cashulator/cubit/calc_Display.cubit.dart';
 import 'package:cashulator/cubit/calc_history.cubit.dart';
 import 'package:cashulator/cubit/conv_display.cubit.dart';
+import 'package:cashulator/service/network.service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,6 +12,7 @@ import 'cubit/operation.cubit.dart';
 import 'cubit/calc.cubit.dart';
 
 void main() {
+  NetworkClientService.init();
   runApp(const CashulatorApp());
 }
 

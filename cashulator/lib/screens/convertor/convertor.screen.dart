@@ -1,46 +1,20 @@
-import 'package:cashulator/cubit/calc_Display.cubit.dart';
-import 'package:cashulator/cubit/calc_history.cubit.dart';
 import 'package:cashulator/cubit/conv_display.cubit.dart';
+import 'package:cashulator/service/exchange_rate.service.dart';
 import 'package:cashulator/widgets/convertorWidgets/convertor_keypad.widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cashulator/widgets/convertorWidgets/convertorDisplay.widget.dart';
-import 'package:cashulator/widgets/commonWidgets/options.widget.dart';
 
-class ConvertorScreen extends StatefulWidget {
+class ConvertorScreen extends StatelessWidget {
   const ConvertorScreen({super.key});
-
-  @override
-  State<ConvertorScreen> createState() => _ConvertorScreenState();
-}
-
-class _ConvertorScreenState extends State<ConvertorScreen> {
-  late final ConvDisplayCubit convDisplayCubit;
-  late final CalcDisplayCubit calcDisplayCubit;
-  late final CalcHistoryCubit calcHistoryCubit;
-
-  @override
-  void initState() {
-    super.initState();
-    convDisplayCubit = ConvDisplayCubit();
-    calcDisplayCubit = CalcDisplayCubit();
-    calcHistoryCubit = CalcHistoryCubit();
-  }
-
-  @override
-  void dispose() {
-    convDisplayCubit.close();
-    calcDisplayCubit.close();
-    calcHistoryCubit.close();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final dividerColor =
         dark ? const Color(0xFF1E1E1E) : const Color(0xFFE6E6E6);
+    final convertBtn = const Color(0xFF22C55E);
 
     return Scaffold(
       body: SafeArea(
@@ -52,7 +26,6 @@ class _ConvertorScreenState extends State<ConvertorScreen> {
                 16,
           ),
           child: BlocBuilder<ConvDisplayCubit, ConvDisplayState>(
-            bloc: convDisplayCubit,
             builder: (context, state) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -68,26 +41,54 @@ class _ConvertorScreenState extends State<ConvertorScreen> {
                     toAmount: state.toAmount,
                     onFromChanged: (val) {
                       if (val == null) return;
-                      convDisplayCubit.changeFromCurrency(val);
+                      context.read<ConvDisplayCubit>().changeFromCurrency(val);
                     },
                     onToChanged: (val) {
                       if (val == null) return;
-                      convDisplayCubit.changeToCurrency(val);
+                      context.read<ConvDisplayCubit>().changeToCurrency(val);
                     },
-                    onSwap: convDisplayCubit.swap,
+                    onSwap: () {
+                      context.read<ConvDisplayCubit>().swap();
+                    },
                   ),
 
                   const SizedBox(height: 8),
 
-                  const _ConvertorToolbar(),
+                  
+                  SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: dividerColor,
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                      onPressed: () async {
+                        try {
+                          final dto = await ExchangeRateService.getexchangeRate();
+                          if (!context.mounted) return;
+                          context.read<ConvDisplayCubit>().convert(dto);
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Failed to load exchange rates'),
+                            ),
+                          );
+                        }
+                      },
+                      child: Text('Convert', style: TextStyle(color: convertBtn)),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
                   Container(height: 1, color: dividerColor),
                   const SizedBox(height: 10),
 
-                
-                  // Keypad uses the cubit to change the amount
+                 
                   ConvertorKeypadWidget(
                     currentText: state.fromAmount,
-                    convDisplayCubit: convDisplayCubit,
+                    convDisplayCubit: context.read<ConvDisplayCubit>(),
                   ),
 
                   const SizedBox(height: 12),
@@ -116,28 +117,6 @@ class _ConvertorScreenState extends State<ConvertorScreen> {
             icon: Icon(Icons.currency_exchange),
             label: 'Convert',
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConvertorToolbar extends StatelessWidget {
-  const _ConvertorToolbar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: const [
-          Icon(Icons.history, size: 20),
-          SizedBox(width: 16),
-          Icon(Icons.straighten, size: 20),
-          SizedBox(width: 16),
-          Icon(Icons.check_box_outlined, size: 20),
-          Spacer(),
-          Icon(Icons.open_in_full, size: 20),
         ],
       ),
     );

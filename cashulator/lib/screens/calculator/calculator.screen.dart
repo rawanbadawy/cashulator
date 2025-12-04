@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-
 import 'package:cashulator/widgets/commonWidgets/keypad.widget.dart';
 import 'package:cashulator/widgets/calculatorWidgets/calculatorDisplay.widget.dart';
 import 'package:cashulator/widgets/commonWidgets/options.widget.dart';
@@ -15,45 +14,18 @@ import 'package:cashulator/cubit/second_operator.cubit.dart';
 import 'package:cashulator/cubit/operation.cubit.dart';
 import 'package:cashulator/cubit/calc.cubit.dart';
 
-class CalculatorScreen extends StatefulWidget {
+class CalculatorScreen extends StatelessWidget {
   const CalculatorScreen({super.key});
 
   @override
-  State<CalculatorScreen> createState() => CalculatorScreenState();
-}
-
-class CalculatorScreenState extends State<CalculatorScreen> {
-  late final FirstOperatorCubit firstOperatorCubit;
-  late final SecondOperatorCubit secondOperatorCubit;
-  late final OperationCubit operationCubit;
-  late final CalcCubit calcCubit;
-  late final CalcHistoryCubit calcHistoryCubit;
-  late final CalcDisplayCubit calcDisplayCubit;
-
-  @override
-  void initState() {
-    super.initState();
-    firstOperatorCubit = FirstOperatorCubit();
-    secondOperatorCubit = SecondOperatorCubit();
-    operationCubit = OperationCubit();
-    calcCubit = CalcCubit();
-    calcHistoryCubit = CalcHistoryCubit();
-    calcDisplayCubit = CalcDisplayCubit();
-  }
-
-  @override
-  void dispose() {
-    firstOperatorCubit.close();
-    secondOperatorCubit.close();
-    operationCubit.close();
-    calcCubit.close();
-    calcHistoryCubit.close();
-    calcDisplayCubit.close();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final firstOperatorCubit = context.read<FirstOperatorCubit>();
+    final secondOperatorCubit = context.read<SecondOperatorCubit>();
+    final operationCubit = context.read<OperationCubit>();
+    final calcCubit = context.read<CalcCubit>();
+    final calcHistoryCubit = context.read<CalcHistoryCubit>();
+    final calcDisplayCubit = context.read<CalcDisplayCubit>();
+
     return Scaffold(
       body: SafeArea(
         bottom: true,
@@ -72,21 +44,25 @@ class CalculatorScreenState extends State<CalculatorScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              OptionsWidget(isCalc: true, calcDisplayCubit: calcDisplayCubit, calcHistoryCubit: calcHistoryCubit,),
+              OptionsWidget(
+                isCalc: true,
+                calcDisplayCubit: calcDisplayCubit,
+                calcHistoryCubit: calcHistoryCubit,
+              ),
               const SizedBox(height: 10),
               BlocBuilder<CalcDisplayCubit, bool>(
-                bloc: calcDisplayCubit,
-                builder: (context, state) 
-                  => 
-              calcDisplayCubit.state == true? 
-              KeypadWidget(
-                isCalc: true,
-                firstOperatorCubit: firstOperatorCubit,
-                secondOperatorCubit: secondOperatorCubit,
-                operationCubit: operationCubit,
-                calcCubit: calcCubit,
-                calcHistoryCubit: calcHistoryCubit,
-              ) : CalcHistoryWidget(calcHistoryCubit: calcHistoryCubit)
+                builder: (context, isCalcMode) {
+                  return isCalcMode
+                      ? KeypadWidget(
+                          isCalc: true,
+                          firstOperatorCubit: firstOperatorCubit,
+                          secondOperatorCubit: secondOperatorCubit,
+                          operationCubit: operationCubit,
+                          calcCubit: calcCubit,
+                          calcHistoryCubit: calcHistoryCubit,
+                        )
+                      : CalcHistoryWidget(calcHistoryCubit: calcHistoryCubit);
+                },
               ),
               const SizedBox(height: 12),
             ],

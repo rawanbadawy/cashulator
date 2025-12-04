@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class CalcCubit extends Cubit<double> {
   CalcCubit() : super(0);
 
+  String? _lastExpression;
+  String? _lastResult;
+
   String _clean(String? text) {
     return text?.replaceAll('(', '').replaceAll(')', '') ?? '';
   }
@@ -30,16 +33,31 @@ class CalcCubit extends Cubit<double> {
       result = b == 0 ? 0 : a / b;
     }
 
+    final expressionText = '$first ${operation ?? ''} ${second ?? ''}'.trim();
+    final resultText = result.toString();
+
+    // update UI result
     emit(result);
-    calcHistoryCubit.addToHistory(entry: 
-      CalculatorHistoryModel(
-       expression: '$first ${operation ?? ''} ${second ?? ''}',
-        result: result.toString(),
+
+    // 🔁 avoid duplicating identical entries when spamming '='
+    if (expressionText == _lastExpression && resultText == _lastResult) {
+      return;
+    }
+
+    _lastExpression = expressionText;
+    _lastResult = resultText;
+
+    calcHistoryCubit.addToHistory(
+      entry: CalculatorHistoryModel(
+        expression: expressionText,
+        result: resultText,
       ),
     );
   }
 
   void clear() {
     emit(0);
+    _lastExpression = null;
+    _lastResult = null;
   }
 }

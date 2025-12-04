@@ -1,3 +1,4 @@
+import 'package:cashulator/models/exchange_rate.Dto.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ConvDisplayState {
@@ -50,13 +51,11 @@ class ConvDisplayCubit extends Cubit<ConvDisplayState> {
     );
   }
 
-  /// For now we just mirror the value into both amounts.
-  /// We are NOT doing real conversion yet.
+
   void setFromAmount(String value) {
     emit(
       state.copyWith(
         fromAmount: value,
-        toAmount: value,
       ),
     );
   }
@@ -93,5 +92,29 @@ class ConvDisplayCubit extends Cubit<ConvDisplayState> {
       next = '$current.';
     }
     setFromAmount(next);
+  }
+
+
+  void convert(ExchangeRateDto dto) {
+    final amount = double.tryParse(state.fromAmount) ?? 0;
+    if (amount == 0) {
+      emit(state.copyWith(toAmount: '0'));
+      return;
+    }
+
+    final fromRate = dto.rates.getByCode(state.fromCurrency);
+    final toRate = dto.rates.getByCode(state.toCurrency);
+
+    if (fromRate == 0) {
+      emit(state.copyWith(toAmount: '0'));
+      return;
+    }
+
+    final result = amount * (toRate / fromRate);
+    emit(
+      state.copyWith(
+        toAmount: result.toStringAsFixed(2),
+      ),
+    );
   }
 }
