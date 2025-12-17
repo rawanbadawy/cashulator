@@ -10,6 +10,7 @@ class ConvertorDisplayWidget extends StatelessWidget {
     required this.onFromChanged,
     required this.onToChanged,
     required this.onSwap,
+    this.isLoading = false,
   });
 
   final String fromCurrency;
@@ -19,6 +20,7 @@ class ConvertorDisplayWidget extends StatelessWidget {
   final ValueChanged<String?> onFromChanged;
   final ValueChanged<String?> onToChanged;
   final VoidCallback onSwap;
+  final bool isLoading;
 
   static const _currencies = <String>[
     'USD',
@@ -149,13 +151,19 @@ class ConvertorDisplayWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
-              child: Text(
-                toAmount,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              child: isLoading
+                  ? const SizedBox(
+                      height: 32,
+                      width: 32,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      toAmount,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
             ),
           ],
         ),

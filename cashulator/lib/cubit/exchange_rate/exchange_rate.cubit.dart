@@ -12,8 +12,10 @@ try {
   final response = await ExchangeRateService.getexchangeRate();
   emit(ExchangeRateSuccess(response));
 } catch(error){
-  emit(ExchangeRateError(message: 'something went wrong', error: error));
-
+  emit(ExchangeRateError(
+    message: 'Failed to load exchange rates. Please check your connection.',
+    error: error,
+  ));
 }
 }
 }
